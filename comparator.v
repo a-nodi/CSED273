@@ -66,17 +66,17 @@ module DataCell(
         out <= 4'b0000;
     end
 
-    always @(posedge ck) begin // If chip selected and write mod write data
-        // Write data
-        out[0] <= data[0] & ~reset;
-        out[1] <= data[1] & ~reset;
-        out[2] <= data[2] & ~reset;
-        out[3] <= data[3] & ~reset;
-    end
-
-    always @(posedge reset) begin // If reset is 1
-        // Reset data to 0000
-        out <= 4'b0000;
+    always @(posedge ck or posedge reset) begin // If chip selected and write mod write data
+        if(ck) begin
+            // Write data
+            out[0] <= data[0];
+            out[1] <= data[1];
+            out[2] <= data[2];
+            out[3] <= data[3];
+        end
+        else begin
+            out = 4'b0000;
+        end
     end
     
 endmodule
@@ -204,7 +204,8 @@ module Comparator(
     input clear_answer,
     input is_on,
     input is_pressed,
-    output wire correct
+    output wire correct,
+    output wire [5:0] password_led
 );
     /*
     The module that compares input word and answer word, contains input word and answer word
@@ -231,11 +232,12 @@ module Comparator(
     reg [2:0] answer_length;
     reg changing_password;
     reg clear_input;
+    reg [2:0] input_manage;
 
     initial begin
-        answer_length <= 3'b110; // Set Initial password to 000000
-        changing_password <= 1'b0; // Not changing password 
-        clear_input <= 1'b0; // Not clearing input
+        answer_length = 3'b110; // Set Initial password to 000000
+        changing_password = 1'b0; // Not changing password 
+        clear_input = 1'b0; // Not clearing input
     end
 
     InputRegArray input_reg_array(data, input_cs, 1, clear_input, input_word[0], input_word[1], input_word[2], input_word[3], input_word[4], input_word[5]);
@@ -262,11 +264,14 @@ module Comparator(
     BitwiseComparator bitwise_comparator5(input_word[5], answer_word[5], _correct[5]);
 
     // Count input word length
-    Counter length_counter(is_pressed, is_star_pressed, clear_input, input_length);
+    Counter length_counter(is_star_pressed, clear_input, is_pressed, input_length);
     
     // Chip selection of input reg array
     Decoder decoder(input_length, 1, input_cs);
     
+    // 
+    PasswordLedManager password_led_manager(input_length, password_led);
+
     // Clear answer reg array if the safe is changing password state
     assign output_cs[0] = changing_password;
     assign output_cs[1] = changing_password;
@@ -287,6 +292,7 @@ module Comparator(
     // 1 when input word and output word is same, 0 when not
     assign correct = length_correct & word_correct;
 
+    /*
     // Clear password
     always @(posedge reset_password) begin
         changing_password <= 1'b1;
@@ -294,24 +300,53 @@ module Comparator(
 
     // End parallel load, Save password length, Clear input reg array if star button pressed
     always @(posedge is_star_pressed) begin
+        if (changing_password == 1'b1) begin
+            answer_length <= input_length;
+        end
+
         changing_password <= 1'b0;
-        answer_length <= input_length;
-        clear_input <= 1;
+        clear_input1 <= 1;
     end
 
     // Clear input reg array if safe if off state
     always @(negedge is_on) begin
-        clear_input <= 1;
+        clear_input2 <= 1;
     end
 
     // Stop clearing input reg array if star button preesed
     always @(negedge is_star_pressed) begin
-        clear_input <= 0;
+        clear_input3 <= 0;
     end
 
     // Stop clearing input reg array if on state
     always @(posedge is_on) begin
-        clear_input <= 0;
+        clear_input4 <= 0;
     end
+    */
 
+    always @(is_on, is_star_pressed, reset_password) begin
+        input_manage[0] <= ~is_on;
+        input_manage[1] <= is_star_pressed;
+        input_manage[2] <= reset_password;
+    end
+    
+    always @(input_manage[0], input_manage[1], input_manage[2]) begin
+        if(input_manage === 3'b000) begin
+            clear_input <= 0;
+        end
+        else if(input_manage === 3'b001) begin
+            clear_input <= 1;
+        end
+        else if(input_manage === 3'b011) begin
+            if (changing_password == 1'b1) begin
+                answer_length <= input_length;
+            end
+            
+            changing_password <= 1'b0;
+            clear_input <= 1;
+        end
+        else if(input_manage === 3'b101) begin
+            changing_password <= 1'b1;
+        end
+    end
 endmodule

@@ -28,13 +28,14 @@ module Counter(
         q[2:0] = 3'b000;
     end
     
-    always @(negedge clk) begin // When keypad
-        q[0] <= ~(is_star_pressed & q[2]) & ~q[0] | ~is_star_pressed & q[2] & q[1] & q[0];
-        q[1] <= ~(is_star_pressed & q[2]) & q[1] ^ q[0] | ~is_star_pressed & q[2] & q[1] & q[0];
-        q[2] <= ~(is_star_pressed & q[2]) & (q[2] | q[1] & q[0]) | ~is_star_pressed & q[2] & q[1] & q[0];
-    end
-    
-    always @(posedge reset) begin // When reset signal comes in
-        q[2:0] = 3'b000;
+    always @(posedge ~clk or posedge reset) begin // When keypad 
+        if(reset) begin
+            q[2:0] <= 3'b000;
+        end
+        else begin
+            q[0] <= ~(is_star_pressed & q[2]) & ~q[0] | ~is_star_pressed & q[2] & q[1] & q[0];
+            q[1] <= ~(is_star_pressed & q[2]) & q[1] ^ q[0] | ~is_star_pressed & q[2] & q[1] & q[0];
+            q[2] <= ~(is_star_pressed & q[2]) & (q[2] | q[1] & q[0]) | ~is_star_pressed & q[2] & q[1] & q[0];
+        end
     end
 endmodule
