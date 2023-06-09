@@ -18,18 +18,30 @@ module safe(
     reg correct;
     reg correct1, correct2;
     wire _correct;
-    wire is_star_pressed;
-    wire is_sharp_pressed;
+    reg is_star_pressed;
+    reg is_sharp_pressed;
 
     initial begin
         is_on <= 1'b0;
         correct <= 1'b0;
     end
 
+    always @(posedge row4) begin
+        if(col3 == 1'b1) begin 
+            is_sharp_pressed <= 1'b1;
+            is_star_pressed <= 1'b0;
+        end
+        else if(col1 == 1'b1) begin 
+            is_sharp_pressed <= 1'b0; 
+            is_star_pressed <= 1'b1;
+        end
+        else begin
+            is_sharp_pressed <= 1'b0;
+            is_star_pressed <= 1'b0;
+        end
+    end
  // Detect Key press
-    assign is_star_pressed = row4 & col1;
-    assign is_sharp_pressed = row4 & col3;
-    assign is_pressed = (col1 | col2 | col3) & ~(row4 & col1) & ~(row4 & col3);
+    assign is_pressed = (col1 | col2 | col3) & ~(is_sharp_pressed) & ~(is_star_pressed);
 
     // 
     always @(posedge is_star_pressed or posedge is_sharp_pressed) begin    
