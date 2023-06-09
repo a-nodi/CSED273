@@ -28,7 +28,7 @@ module Counter(
         q[2:0] = 3'b000;
     end
     
-    always @(posedge ~clk or posedge reset) begin // When keypad 
+    always @(negedge clk or posedge reset) begin // When keypad 
         if(reset) begin
             q[2:0] <= 3'b000;
         end
