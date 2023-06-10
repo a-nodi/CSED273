@@ -8,10 +8,7 @@ module safe(
     output [5:0] password_led,
     output wire [2:0] state
 );
-    /*
-    
-    
-    */
+
     reg is_on;
     wire is_pressed;
     wire [3:0] bcd;
@@ -25,22 +22,17 @@ module safe(
         is_on <= 1'b0;
         correct <= 1'b0;
     end
-
-    always @(posedge row4) begin
-        if(col3 == 1'b1) begin 
-            is_sharp_pressed <= 1'b1;
-            is_star_pressed <= 1'b0;
-        end
-        else if(col1 == 1'b1) begin 
-            is_sharp_pressed <= 1'b0; 
-            is_star_pressed <= 1'b1;
-        end
-        else begin
-            is_sharp_pressed <= 1'b0;
-            is_star_pressed <= 1'b0;
-        end
+    
+    always @(row4, col1) begin
+        if(row4 & col1 == 1'b1) is_star_pressed <= 1'b1;
+        else if(col1 == 1'b0) is_star_pressed <= 1'b0;
     end
- // Detect Key press
+    
+    always @(row4, col3) begin
+        if(row4 & col3 == 1'b1) is_sharp_pressed <= 1'b1;
+        else if(col3 == 1'b0) is_sharp_pressed <= 1'b0;
+    end
+    // Detect Key press
     assign is_pressed = (col1 | col2 | col3) & ~(is_sharp_pressed) & ~(is_star_pressed);
 
     // 
@@ -64,4 +56,3 @@ module safe(
     StateManager state_manager(is_on, is_star_pressed, reset_password, correct, initialize, state);
 
 endmodule
-
