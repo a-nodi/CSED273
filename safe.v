@@ -4,7 +4,7 @@
 
 module safe(
     input row1, row2, row3, row4, col1, col2, col3,
-    input reset_password, initialize,
+    input reset_password, initialize, clk,
     output [5:0] password_led,
     output [2:0] state
 );
@@ -53,6 +53,6 @@ module safe(
     Comparator comparator(bcd_, is_star_pressed, reset_password, initialize, is_on, is_pressed_, _correct_, password_led);
     
     // Determine current machines states
-    StateManager state_manager(is_on, is_star_pressed, reset_password, correct, initialize, state);
+    StateManager state_manager(is_on, is_star_pressed, reset_password, correct, initialize, clk, state);
 
 endmodule

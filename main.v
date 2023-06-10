@@ -46,6 +46,7 @@ module main (
         .col3(col[2]),
         .reset_password(ResetPW),
         .initialize(init),
+        .clk(clk),
         .password_led(password_),
         .state(state_)
     );
