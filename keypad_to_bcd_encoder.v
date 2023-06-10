@@ -24,9 +24,9 @@ module KeypadToBcdEncoder(
     Synchronous module
     */
     
-    assign bcd[3] = ~row1 & ~row2 & row3 & ~col1 & col2 | ~row1 & ~row2 & row3 & ~col1 & col3;
-    assign bcd[2] = ~row1 & row2 | ~row1 & row3 & col1;
-    assign bcd[1] = row1 & ~col1 & col2 | row1 & ~col1 & col3 | ~row1 & row2 & ~col1 & ~col2 & col3 | ~row1 & ~row2 & row3 & col1;
-    assign bcd[0] = row1 & col1 | row1 & ~col2 & col3 | ~row1 & row2 & col2 | ~row1 & ~row2 & row3 & col1 | ~row1 & ~row2 & row3 & ~col2 & col3;
+    assign bcd[3] = row3 & col2 | row3 & col3;
+    assign bcd[2] = row2 & col1 | row2 & col2 | row2 & col3 | row3 & col1;
+    assign bcd[1] = row1 & col2 | row1 & col3 | row2 & col3 | row3 & col1;
+    assign bcd[0] = row1 & col1 | row1 & col3 | row2 & col2 | row3 & col1 | row3 & col3;
 
 endmodule
