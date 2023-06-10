@@ -19,6 +19,7 @@ module main (
     wire [5:0] password_;                     //비밀번호는 최대 6자리
     wire [3:0] row_;
     reg [1:0] rowSel;
+
     reg is_sharp_pressed;
     reg is_star_pressed;
     wire is_pressed_;
@@ -40,7 +41,7 @@ module main (
     end
 */
 
-    always @(row_) begin
+    always @(rowSel) begin
         row <= row_;
     end
 
@@ -196,24 +197,9 @@ module main (
         endcase
     end
 
-    always @(row_[3], col[0]) begin
-        if(row_[3] & col[0] === 1'b1) is_star_pressed <= 1'b1;
-        else if(row_[3] === 1'b1 && col[0] === 1'b0) is_star_pressed <= 1'b0;
-    end
-    
-    always @(row_[3], col[2]) begin
-        if(row_[3] & col[2] === 1'b1) is_sharp_pressed <= 1'b1;
-        else if(row_[3] === 1'b1 && col[2] === 1'b0) is_sharp_pressed <= 1'b0;
-    end
-    
-    // Detect Key press
-    assign is_pressed_ = (col[0] | col[1] | col[2]) & ~(is_sharp_pressed) & ~(is_star_pressed);
+    /////////////////////////////
 
-    always @(row_, col) begin
-        led[7] <= is_pressed_;
-        led[8] <= is_star_pressed;
-        led[9] <= is_sharp_pressed;
-    end
+    /////////////////////////////
 endmodule
 
 module Seg7Renderer (
