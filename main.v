@@ -137,7 +137,7 @@ module main (
         case (state_)
             0:
             begin
-                gbuf[3:0]   <= 4'b1111;                     //state 0은 off이므로 아무것도 켜지면 안됨.(아래 코드표에서 off는 1111에 matched)  
+                gbuf[3:0]   <= 4'b1111;                     //state 0은 off이므로 아무것도 켜지면 안됨.(아래 코드표에서 off는 1111에 matched)
                 gbuf[7:4]   <= 4'b1111;
                 gbuf[11:8]  <= 4'b1111;
                 gbuf[15:12] <= 4'b1111;
