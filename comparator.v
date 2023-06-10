@@ -240,7 +240,7 @@ module Comparator(
         clear_input = 1'b0; // Not clearing input
     end
 
-    InputRegArray input_reg_array(data, input_cs, 1, clear_input, input_word[0], input_word[1], input_word[2], input_word[3], input_word[4], input_word[5]);
+    InputRegArray input_reg_array(data, input_cs, 1, clear_input | ~is_on, input_word[0], input_word[1], input_word[2], input_word[3], input_word[4], input_word[5]);
     
     /*
     2to1MUX 2to1mux0(answer_word[0], input_word[0], parallel_load, answer_input[0]);
@@ -264,7 +264,7 @@ module Comparator(
     BitwiseComparator bitwise_comparator5(input_word[5], answer_word[5], _correct[5]);
 
     // Count input word length
-    Counter length_counter(is_star_pressed, clear_input, is_pressed, input_length);
+    Counter length_counter(is_star_pressed, clear_input | ~is_on, is_pressed, input_length);
     
     // Chip selection of input reg array
     Decoder decoder(input_length, 1, input_cs);

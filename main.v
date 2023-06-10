@@ -18,6 +18,7 @@ module main (
     wire [2:0] state;                        //state : 000(off) 001(on) 010(wrong1) 011(wrong2) 100(open) 101(reset) 110(lock)
     wire [5:0] password;                     //비밀번호는 최대 6자리
     wire [3:0] row_;
+    reg [1:0] rowSel;
 
     initial begin
         counter <= 0;
@@ -25,6 +26,7 @@ module main (
         gbuf <= 16'b1111111111111111;
         led <= 16'b0000000000000000;
         row <= 4'b0001;
+        rowSel <= 2'b00;
     end
 /*
     always @ (state) begin                  //테ㅡㅅ트벤치 디버깅용
@@ -50,29 +52,33 @@ module main (
 
     always @(negedge clk) begin
         counter2 <= counter2 + 1;
-        if(counter2 === 100000) begin
+        if(counter2 === 1000000) begin
             counter2 <= 0;
-            case (row)
-            4'b0001:
+            case (rowSel)
+            2'b00:
             begin
-                row <= 4'b0010;
+                rowSel <= 2'b01;
             end
-            4'b0010:
+            2'b01:
             begin
-                row <= 4'b0100;
+                rowSel <= 2'b10;
             end
-            4'b0100:
+            2'b10:
             begin
-                row <= 4'b1000;
+                rowSel <= 2'b11;
             end
-            4'b1000:
+            2'b11:
             begin
-                row <= 4'b0001;
+                rowSel <= 2'b00;
             end
             endcase
         end
     end
-
+    
+    _1to4DeMUX demux(
+        .sel(rowSel),
+        .out(row)
+    );
 
     always @(password) begin
         led <= 16'b0000000000000000;
@@ -265,3 +271,13 @@ module bcd_to_7seg (
         endcase
     end
 endmodule
+
+module _1to4DeMUX(
+    input [1:0] sel,
+    output [3:0] out
+);
+    assign out[0] = ~sel[1] & ~sel[0];
+    assign out[1] = ~sel[1] & sel[0];
+    assign out[2] = sel[1] & ~sel[0];
+    assign out[3] = sel[1] & sel[0];
+endmodule 
