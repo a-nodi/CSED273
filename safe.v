@@ -21,6 +21,11 @@ module safe(
     initial begin
         is_on <= 1'b0;
         correct <= 1'b0;
+        is_star_pressed <= 1'b0;
+        is_sharp_pressed <= 1'b0;
+        correct <= 1'b0;
+        correct1 <= 1'b0;
+        correct2 <= 1'b0;
     end
     
     always @(row4, col1) begin

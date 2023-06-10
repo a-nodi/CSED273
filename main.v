@@ -34,7 +34,9 @@ module main (
     end
 */
 
-    assign row_ = row;
+    always @(row_) begin
+        row <= row_;
+    end
 
     safe safe (
         .row1(row_[0]),
@@ -79,7 +81,7 @@ module main (
     _1to4DeMUX demux(
         .sel(rowSel),
         .data(col[0] | col[1] | col[2]),
-        .out(row)
+        .out(row_)
     );
 
     always @(password_) begin
