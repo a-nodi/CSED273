@@ -264,7 +264,7 @@ module Comparator(
     BitwiseComparator bitwise_comparator5(input_word[5], answer_word[5], _correct[5]);
 
     // Count input word length
-    Counter length_counter(is_star_pressed, clear_input | ~is_on, is_pressed, input_length);
+    Counter length_counter(is_star_pressed, is_star_pressed | clear_input | ~is_on, is_pressed, input_length);
     
     // Chip selection of input reg array
     Decoder decoder(input_length, 1, input_cs);

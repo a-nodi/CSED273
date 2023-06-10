@@ -15,8 +15,8 @@ module main (
     reg [31:0] counter;
     reg [31:0] counter2;
     reg [15:0] gbuf;                        //gbuf[3:0] 는 첫번째(가장 오른쪽) 7-segment의 숫자를 이진수로 저장, gbuf[7:4]은 두번째 ...
-    wire [2:0] state;                        //state : 000(off) 001(on) 010(wrong1) 011(wrong2) 100(open) 101(reset) 110(lock)
-    wire [5:0] password;                     //비밀번호는 최대 6자리
+    wire [2:0] state_;                        //state : 000(off) 001(on) 010(wrong1) 011(wrong2) 100(open) 101(reset) 110(lock)
+    wire [5:0] password_;                     //비밀번호는 최대 6자리
     wire [3:0] row_;
     reg [1:0] rowSel;
 
@@ -46,8 +46,8 @@ module main (
         .col3(col[2]),
         .reset_password(ResetPW),
         .initialize(init),
-        .password_led(password),
-        .state(state)
+        .password_led(password_),
+        .state(state_)
     );
 
     always @(negedge clk) begin
@@ -77,22 +77,23 @@ module main (
     
     _1to4DeMUX demux(
         .sel(rowSel),
+        .data(col[0] | col[1] | col[2]),
         .out(row)
     );
 
-    always @(password) begin
+    always @(password_) begin
         led <= 16'b0000000000000000;
-        led[15] <= password[5];                         //가장 왼쪽 led를 비밀번호 중 가장 먼저 눌린 수(password[5])에 mapping
-        led[14] <= password[4];
-        led[13] <= password[3];
-        led[12] <= password[2];
-        led[11] <= password[1];
-        led[10] <= password[0];
+        led[15] <= password_[5];                         //가장 왼쪽 led를 비밀번호 중 가장 먼저 눌린 수(password[5])에 mapping
+        led[14] <= password_[4];
+        led[13] <= password_[3];
+        led[12] <= password_[2];
+        led[11] <= password_[1];
+        led[10] <= password_[0];
     end
 
     
-    always @(state) begin
-        case (state)
+    always @(state_) begin
+        case (state_)
             0:
             begin
                 led[6:0] <= 7'b0000001;
@@ -133,7 +134,7 @@ module main (
     );
 
     always @(posedge clk) begin
-        case (state)
+        case (state_)
             0:
             begin
                 gbuf[3:0]   <= 4'b1111;                     //state 0은 off이므로 아무것도 켜지면 안됨.(아래 코드표에서 off는 1111에 matched)
@@ -194,7 +195,7 @@ module Seg7Renderer (
     output reg [7:0] seg
 );
     integer counter;
-    wire [7:0] res0, res1, res2, res3;
+    wire [7:0] res0_, res1_, res2_, res3_;
 
     initial begin
         counter <= 0;
@@ -204,19 +205,19 @@ module Seg7Renderer (
 
     bcd_to_7seg pos0 (              // code(4bit) -> 7seg(8bit) 로 변환 후 seg에 저장
         .bcd(gbuf[3:0]),
-        .seg(res0)
+        .seg(res0_)
     );
     bcd_to_7seg pos1 (
         .bcd(gbuf[7:4]),
-        .seg(res1)
+        .seg(res1_)
     );
     bcd_to_7seg pos2 (
         .bcd(gbuf[11:8]),
-        .seg(res2)
+        .seg(res2_)
     );
     bcd_to_7seg pos3 (
         .bcd(gbuf[15:12]),
-        .seg(res3)
+        .seg(res3_)
     );
 
     always @(posedge clk) begin
@@ -226,19 +227,19 @@ module Seg7Renderer (
             case (segSel)
                 4'b1110: begin                               // 1110
                     segSel <= 4'b1101;                       // 1101 (두번째 segment로 옮겨줌)
-                    seg <= res1;                        // 두번째 segment에 해당하는 res1을 seg에 저장         
+                    seg <= res1_;                        // 두번째 segment에 해당하는 res1을 seg에 저장         
                 end
                 4'b1101: begin
                     segSel <= 4'b1011;
-                    seg <= res2;
+                    seg <= res2_;
                 end
                 4'b1011: begin
                     segSel <= 4'b0111;
-                    seg <= res3;
+                    seg <= res3_;
                 end
                 4'b0111: begin
                     segSel <= 4'b1110;
-                    seg <= res0;
+                    seg <= res0_;
                 end
             endcase
         end
@@ -274,10 +275,11 @@ endmodule
 
 module _1to4DeMUX(
     input [1:0] sel,
+    input data,
     output [3:0] out
 );
-    assign out[0] = ~sel[1] & ~sel[0];
-    assign out[1] = ~sel[1] & sel[0];
-    assign out[2] = sel[1] & ~sel[0];
-    assign out[3] = sel[1] & sel[0];
+    assign out[0] = data & ~sel[1] & ~sel[0];
+    assign out[1] = data & ~sel[1] & sel[0];
+    assign out[2] = data & sel[1] & ~sel[0];
+    assign out[3] = data & sel[1] & sel[0];
 endmodule 
