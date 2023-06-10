@@ -29,26 +29,25 @@ module safe(
     end
     
     always @(row4, col1) begin
-        if(row4 & col1 == 1'b1) is_star_pressed <= 1'b1;
-        else if(col1 == 1'b0) is_star_pressed <= 1'b0;
+        if(row4 & col1 === 1'b1) is_star_pressed <= 1'b1;
+        else if(row4 === 1'b1 && col1 === 1'b0) is_star_pressed <= 1'b0;
     end
     
     always @(row4, col3) begin
-        if(row4 & col3 == 1'b1) is_sharp_pressed <= 1'b1;
-        else if(col3 == 1'b0) is_sharp_pressed <= 1'b0;
+        if(row4 & col3 === 1'b1) is_sharp_pressed <= 1'b1;
+        else if(row4 === 1'b1 && col3 === 1'b0) is_sharp_pressed <= 1'b0;
     end
+    
     // Detect Key press
     assign is_pressed_ = (col1 | col2 | col3) & ~(is_sharp_pressed) & ~(is_star_pressed);
 
     // 
-    always @(posedge is_star_pressed or posedge is_sharp_pressed) begin    
-        if(is_sharp_pressed) begin
-            is_on <= ~is_on;
-            correct <= _correct_;
-        end
-        else begin
-            correct <= _correct_;
-        end
+    always @(posedge (is_star_pressed | is_sharp_pressed)) begin    
+        correct <= _correct_;
+    end
+
+    always @(posedge (is_sharp_pressed | initialize)) begin
+        is_on <= ~initialize & ~is_on;
     end
 
     // Convert pressed keypad row column to 8421 BCD code
