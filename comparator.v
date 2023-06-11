@@ -204,6 +204,8 @@ module Comparator(
     input clear_answer,
     input is_on,
     input is_pressed,
+    input changing_password,
+    input clk,
     output wire correct,
     output wire [5:0] password_led
 );
@@ -230,17 +232,15 @@ module Comparator(
     wire [5:0] output_cs;
     wire [2:0] input_length;
     reg [2:0] answer_length;
-    reg changing_password;
     reg clear_input;
-    reg [2:0] input_manage;
+    //reg [2:0] input_manage;
 
     initial begin
         answer_length = 3'b110; // Set Initial password to 000000
-        changing_password = 1'b0; // Not changing password 
         clear_input = 1'b0; // Not clearing input
     end
 
-    InputRegArray input_reg_array(data, input_cs, 1, clear_input | ~is_on, input_word[0], input_word[1], input_word[2], input_word[3], input_word[4], input_word[5]);
+    InputRegArray input_reg_array(data, input_cs, 1, clear_input, input_word[0], input_word[1], input_word[2], input_word[3], input_word[4], input_word[5]);
     
     /*
     2to1MUX 2to1mux0(answer_word[0], input_word[0], parallel_load, answer_input[0]);
@@ -252,7 +252,7 @@ module Comparator(
     */
 
     OutputRegArray output_reg_array(input_word[0], input_word[1], input_word[2], input_word[3], input_word[4], input_word[5], 
-                                    output_cs, parallel_load, clear_answer, 
+                                    output_cs, changing_password & ~is_star_pressed, clear_answer, 
                                     answer_word[0], answer_word[1], answer_word[2], answer_word[3], answer_word[4], answer_word[5]);
     
     // Bit-wise compare input word bits and output word bits
@@ -264,7 +264,7 @@ module Comparator(
     BitwiseComparator bitwise_comparator5(input_word[5], answer_word[5], _correct[5]);
 
     // Count input word length
-    Counter length_counter(is_pressed, is_star_pressed | clear_input | ~is_on, clk, input_length);
+    Counter length_counter(is_pressed, clear_input, clk, input_length);
     
     // Chip selection of input reg array
     Decoder decoder(input_length, 1, input_cs);
@@ -281,7 +281,7 @@ module Comparator(
     assign output_cs[5] = changing_password;
 
     // Parallel load input reg array to answer reg array if the safe is changing password state, password length is 4 ~ 6, 
-    assign parallel_load = changing_password & input_length[2] & is_star_pressed & ~(input_length[2] & input_length[1] & input_length[0]);
+    //assign parallel_load = changing_password & (input_length[2] & ~(input_length[1] & input_length[0]));
     
     // 1 when length of input word and length of answer word is same, 0 when not
     assign length_correct = (input_length[0] ~^ answer_length[0]) & (input_length[1] ~^ answer_length[1]) & (input_length[2] ~^ answer_length[2]);
@@ -290,7 +290,7 @@ module Comparator(
     assign word_correct = _correct[0] & _correct[1] & _correct[2] & _correct[3] & _correct[4] & _correct[5];
     
     // 1 when input word and output word is same, 0 when not
-    assign correct = length_correct & word_correct | changing_password & (input_length[2] & ~(input_length[1] & input_length[0]));
+    assign correct = length_correct & word_correct & ~changing_password | changing_password & (input_length[2] & ~(input_length[1] & input_length[0]));
 
     /*
     // Clear password
@@ -324,6 +324,33 @@ module Comparator(
     end
     */
 
+    always @(posedge clk) begin
+        if(is_on === 1'b0) begin
+            clear_input = 1;
+        end
+        else if(is_star_pressed === 1'b1) begin
+            if(changing_password === 1'b1) begin
+                if(input_length[2] & ~(input_length[1] & input_length[0])) begin
+                    answer_length = input_length;
+                    clear_input = 1;
+                end
+                else begin
+                    clear_input = 1;
+                end
+            end
+            else begin
+                clear_input = 1;
+            end
+        end
+        else if(reset_password === 1'b1) begin
+            clear_input = 1;
+        end
+        else begin
+            clear_input = 0;
+        end
+    end
+
+/*
     always @(is_on, is_star_pressed, reset_password) begin
         input_manage[0] <= ~is_on;
         input_manage[1] <= is_star_pressed;
@@ -349,4 +376,5 @@ module Comparator(
             changing_password <= 1'b1;
         end
     end
+*/
 endmodule

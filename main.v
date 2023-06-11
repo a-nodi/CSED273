@@ -20,8 +20,6 @@ module main (
     wire [3:0] row_;
     reg [1:0] rowSel;
 
-    wire pressed_;
-
     initial begin
         counter <= 0;
         counter2 <= 0;
@@ -52,9 +50,7 @@ module main (
         .initialize(init),
         .clk(clk),
         .password_led(password_),
-        .state(state_),
-
-        .pressed_(pressed_)
+        .state(state_)
     );
 
     always @(negedge clk) begin
@@ -195,9 +191,7 @@ module main (
     end
 
     /////////////////////////////
-    always @(pressed_) begin
-        led[8] = pressed_;
-    end
+
     /////////////////////////////
 endmodule
 

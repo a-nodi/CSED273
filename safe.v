@@ -6,8 +6,7 @@ module safe(
     input row1, row2, row3, row4, col1, col2, col3,
     input reset_password, initialize, clk,
     output [5:0] password_led,
-    output [2:0] state,
-    output pressed_
+    output [2:0] state
 );
     integer counter1;
     integer counter2;
@@ -88,14 +87,15 @@ module safe(
     end
 
     always @(posedge (is_sharp_pressed | initialize)) begin
-        is_on <= ~initialize & ~is_on;
+        if(initialize === 1'b1) is_on <= 1'b0;
+        else if (state === 3'b000 || state === 3'b001 || state === 3'b100) is_on <= ~is_on;
     end
 
     // Convert pressed keypad row column to 8421 BCD code
     KeypadToBcdEncoder keypad_to_bcd(row1, row2, row3, row4, col1, col2, col3, bcd_);
 
     // Compare input word and answer word
-    Comparator comparator(bcd_, is_star_pressed, reset_password, initialize, is_on, pressed_, _correct_, password_led);
+    Comparator comparator(bcd_, is_star_pressed, reset_password, initialize, is_on, pressed_, (state[2] & ~state[1] & state[0]), clk, _correct_, password_led);
     
     // Determine current machines states
     StateManager state_manager(is_on, is_star_pressed, reset_password, correct, initialize, clk, state);

@@ -77,7 +77,7 @@ module StateManager(
                 else if (state === 3'b011 && _input == 5'b11000) begin         //wrong2일때 재설정, 초기화가 0이고, correct도 0인 상태에서 *이 눌리면 -> lock(111) 으로
                     state = 3'b111;
                     star_r = 1'b0; end
-                else if (state ===3'b100 && _input[4] == 1'b0) begin          //open 일때 reset이 눌리면 -> reset(101)으로
+                else if (state ===3'b100 && _input[4] == 1'b0) begin          //open 일때 is_on이 0이 되면 -> off(000)으로
                     state = 3'b000; 
                     star_r = 1'b0; end
                 else if (state ===3'b100 && (_input == 5'b10110 || _input == 5'b10100)) begin          //open 일때 reset이 눌리면 -> reset(101)으로
