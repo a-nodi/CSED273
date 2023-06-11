@@ -3,7 +3,7 @@
 `timescale 1ns / 1ps
 
 module Counter(
-    input is_star_pressed,
+    input is_pressed,
     input reset,
     input clk,
     output reg [2:0] q
@@ -23,19 +23,40 @@ module Counter(
     Synchronous module
     */
     
+    integer counter;
+    reg press;
+    reg is_pressed_prev;
+    
     // Initialize when FPGA turned on
     initial begin
         q[2:0] = 3'b000;
+        counter = 0;
+        press = 1'b0;
+        is_pressed_prev = 1'b0;
+    end
+    
+    always @(posedge clk) begin
+        is_pressed_prev <= is_pressed;
+        if(is_pressed & (~is_pressed_prev)) begin
+            press<=1'b1;
+        end
     end
     
     always @(negedge clk or posedge reset) begin // When keypad 
         if(reset) begin
-            q[2:0] <= 3'b000;
+            q[2:0] = 3'b000;
         end
         else begin
-            q[0] <= ~(is_star_pressed & q[2]) & ~q[0] | ~is_star_pressed & q[2] & q[1] & q[0];
-            q[1] <= ~(is_star_pressed & q[2]) & q[1] ^ q[0] | ~is_star_pressed & q[2] & q[1] & q[0];
-            q[2] <= ~(is_star_pressed & q[2]) & (q[2] | q[1] & q[0]) | ~is_star_pressed & q[2] & q[1] & q[0];
+            counter = counter + 1;
+            if(counter === 60000) begin
+                counter = 0;
+                if(press === 1'b1) begin
+                    q[0] = ~q[0] | q[2] & q[1] & q[0];
+                    q[1] = q[1] ^ q[0] | q[2] & q[1] & q[0];
+                    q[2] = q[2] | q[1] & q[0];
+                    press = 1'b0;
+                end
+            end
         end
     end
 endmodule
