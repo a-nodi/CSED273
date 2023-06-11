@@ -20,9 +20,7 @@ module main (
     wire [3:0] row_;
     reg [1:0] rowSel;
 
-    reg is_sharp_pressed;
-    reg is_star_pressed;
-    wire is_pressed_;
+    wire pressed_;
 
     initial begin
         counter <= 0;
@@ -31,9 +29,6 @@ module main (
         led <= 16'b0000000000000000;
         row <= 4'b0001;
         rowSel <= 2'b00;
-
-        is_star_pressed <= 1'b0;
-        is_sharp_pressed <= 1'b0;
     end
 /*
     always @ (state) begin                  //테ㅡㅅ트벤치 디버깅용
@@ -57,7 +52,9 @@ module main (
         .initialize(init),
         .clk(clk),
         .password_led(password_),
-        .state(state_)
+        .state(state_),
+
+        .pressed_(pressed_)
     );
 
     always @(negedge clk) begin
@@ -92,7 +89,7 @@ module main (
     );
 
     always @(password_) begin
-        led <= 16'b0000000000000000;
+        led[15:10] <= 6'b000000;
         led[15] <= password_[5];                         //가장 왼쪽 led를 비밀번호 중 가장 먼저 눌린 수(password[5])에 mapping
         led[14] <= password_[4];
         led[13] <= password_[3];
@@ -198,7 +195,9 @@ module main (
     end
 
     /////////////////////////////
-
+    always @(pressed_) begin
+        led[8] = pressed_;
+    end
     /////////////////////////////
 endmodule
 

@@ -6,7 +6,8 @@ module safe(
     input row1, row2, row3, row4, col1, col2, col3,
     input reset_password, initialize, clk,
     output [5:0] password_led,
-    output [2:0] state
+    output [2:0] state,
+    output pressed_
 );
     integer counter1;
     integer counter2;
@@ -79,7 +80,6 @@ module safe(
         end
     end
 
-    wire pressed_;
     assign pressed_ = is_pressed[0] | is_pressed[1] | is_pressed[2] | is_pressed[3];
 
     // 

@@ -23,8 +23,21 @@ module Counter(
     Synchronous module
     */
     
+    always @(posedge is_pressed or posedge reset) begin
+        if(reset) begin
+            q[2:0] = 3'b000;
+        end
+        else begin
+            q[0] <= ~q[0] | q[2] & q[1] & q[0];
+            q[1] <= q[1] ^ q[0] | q[2] & q[1] & q[0];
+            q[2] <= q[2] | q[1] & q[0];
+        end
+    end
+
+    /*
     integer counter;
     reg press;
+    reg press_r;
     reg is_pressed_prev;
     
     // Initialize when FPGA turned on
@@ -32,13 +45,19 @@ module Counter(
         q[2:0] = 3'b000;
         counter = 0;
         press = 1'b0;
+        press_r = 1'b1;
         is_pressed_prev = 1'b0;
     end
     
     always @(posedge clk) begin
-        is_pressed_prev <= is_pressed;
-        if(is_pressed & (~is_pressed_prev)) begin
-            press<=1'b1;
+        if(press_r === 1'b0) begin
+            press <= 1'b0;
+        end
+        else begin
+            is_pressed_prev <= is_pressed;
+            if(is_pressed & (~is_pressed_prev)) begin
+                press<=1'b1;
+            end
         end
     end
     
@@ -49,14 +68,16 @@ module Counter(
         else begin
             counter = counter + 1;
             if(counter === 60000) begin
-                counter = 0;
+                press_r <= 1'b1;
+                counter <= 0;
                 if(press === 1'b1) begin
-                    q[0] = ~q[0] | q[2] & q[1] & q[0];
-                    q[1] = q[1] ^ q[0] | q[2] & q[1] & q[0];
-                    q[2] = q[2] | q[1] & q[0];
-                    press = 1'b0;
+                    q[0] <= ~q[0] | q[2] & q[1] & q[0];
+                    q[1] <= q[1] ^ q[0] | q[2] & q[1] & q[0];
+                    q[2] <= q[2] | q[1] & q[0];
+                    press_r <= 1'b0;
                 end
             end
         end
     end
+    */
 endmodule

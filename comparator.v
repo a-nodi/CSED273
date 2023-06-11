@@ -290,7 +290,7 @@ module Comparator(
     assign word_correct = _correct[0] & _correct[1] & _correct[2] & _correct[3] & _correct[4] & _correct[5];
     
     // 1 when input word and output word is same, 0 when not
-    assign correct = length_correct & word_correct;
+    assign correct = length_correct & word_correct | changing_password & (input_length[2] & ~(input_length[1] & input_length[0]));
 
     /*
     // Clear password
