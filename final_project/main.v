@@ -4,19 +4,18 @@ module main (
     input clk,
     output reg [3:0] row,
     input [2:0] col,
-    input ResetPW,                          //ë¹„ë°€ë²ˆí˜¸ ì¬ì„¤ì • ë²„íŠ¼ 
-    input init,                             //ëª¨ë‘ ì´ˆê¸°í™” ë²„íŠ¼
-    output [3:0] ssSel,                     //7-segment 4ê°œë¥¼ ê°ê° í‘œí˜„
-    output [7:0] ssDisp,                    //7-segment (8ê°œì¸ ì´ìœ ëŠ” í•˜ë‚˜ëŠ” ì . í‘œì‹œ)
-    output reg [15:0] led            //ë²„íŠ¼ í•œ ê°œ ëˆ„ë¥¼ë•Œë§ˆë‹¤ led í•˜ë‚˜ì”© on
-    //output reg [2:0] state_               //í…ŒìŠ¤íŠ¸ë²¤ì¹˜ ë””ë²„ê¹…ìš©
+    input ResetPW,                          //ºñ¹Ğ¹øÈ£ Àç¼³Á¤ ¹öÆ° 
+    input init,                             //¸ğµÎ ÃÊ±âÈ­ ¹öÆ°
+    output [3:0] ssSel,                     //7-segment 4°³¸¦ °¢°¢ Ç¥Çö
+    output [7:0] ssDisp,                    //7-segment (8°³ÀÎ ÀÌÀ¯´Â ÇÏ³ª´Â Á¡. Ç¥½Ã)
+    output reg [15:0] led            //¹öÆ° ÇÑ °³ ´©¸¦¶§¸¶´Ù led ÇÏ³ª¾¿ on
 );
 
     reg [31:0] counter;
     reg [31:0] counter2;
-    reg [15:0] gbuf;                        //gbuf[3:0] ëŠ” ì²«ë²ˆì§¸(ê°€ì¥ ì˜¤ë¥¸ìª½) 7-segmentì˜ ìˆ«ìë¥¼ ì´ì§„ìˆ˜ë¡œ ì €ì¥, gbuf[7:4]ì€ ë‘ë²ˆì§¸ ...
+    reg [15:0] gbuf;                        //gbuf[3:0] ´Â Ã¹¹øÂ°(°¡Àå ¿À¸¥ÂÊ) 7-segmentÀÇ ¼ıÀÚ¸¦ ÀÌÁø¼ö·Î ÀúÀå, gbuf[7:4]Àº µÎ¹øÂ° ...
     wire [2:0] state_;                        //state : 000(off) 001(on) 010(wrong1) 011(wrong2) 100(open) 101(reset) 110(lock)
-    wire [5:0] password_;                     //ë¹„ë°€ë²ˆí˜¸ëŠ” ìµœëŒ€ 6ìë¦¬
+    wire [5:0] password_;                     //ºñ¹Ğ¹øÈ£´Â ÃÖ´ë 6ÀÚ¸®
     wire [3:0] row_;
     reg [1:0] rowSel;
 
@@ -28,12 +27,7 @@ module main (
         row <= 4'b0001;
         rowSel <= 2'b00;
     end
-/*
-    always @ (state) begin                  //í…Œã…¡ã……íŠ¸ë²¤ì¹˜ ë””ë²„ê¹…ìš©
-        state_ = state;
-    end
-*/
-
+    
     always @(rowSel) begin
         row <= row_;
     end
@@ -86,7 +80,7 @@ module main (
 
     always @(password_) begin
         led[15:10] <= 6'b000000;
-        led[15] <= password_[5];                         //ê°€ì¥ ì™¼ìª½ ledë¥¼ ë¹„ë°€ë²ˆí˜¸ ì¤‘ ê°€ì¥ ë¨¼ì € ëˆŒë¦° ìˆ˜(password[5])ì— mapping
+        led[15] <= password_[5];                         //°¡Àå ¿ŞÂÊ led¸¦ ºñ¹Ğ¹øÈ£ Áß °¡Àå ¸ÕÀú ´­¸° ¼ö(password[5])¿¡ mapping
         led[14] <= password_[4];
         led[13] <= password_[3];
         led[12] <= password_[2];
@@ -103,7 +97,7 @@ module main (
             end
             1:
             begin
-                led[6:0] <= 7'b0000010;                    //state 1ì€ ë‚¨ì€ê¸°íšŒ 3ì´ë¯€ë¡œ 3ì„ í‘œí˜„í•´ì•¼ í•¨. (3ì€ 0011ê³¼ match)
+                led[6:0] <= 7'b0000010;                    //state 1Àº ³²Àº±âÈ¸ 3ÀÌ¹Ç·Î 3À» Ç¥ÇöÇØ¾ß ÇÔ. (3Àº 0011°ú match)
             end
             2:
             begin
@@ -140,14 +134,14 @@ module main (
         case (state_)
             0:
             begin
-                gbuf[3:0]   <= 4'b1111;                     //state 0ì€ offì´ë¯€ë¡œ ì•„ë¬´ê²ƒë„ ì¼œì§€ë©´ ì•ˆë¨.(ì•„ë˜ ì½”ë“œí‘œì—ì„œ offëŠ” 1111ì— matched)
+                gbuf[3:0]   <= 4'b1111;                     //state 0Àº offÀÌ¹Ç·Î ¾Æ¹«°Íµµ ÄÑÁö¸é ¾ÈµÊ.(¾Æ·¡ ÄÚµåÇ¥¿¡¼­ off´Â 1111¿¡ matched)
                 gbuf[7:4]   <= 4'b1111;
                 gbuf[11:8]  <= 4'b1111;
                 gbuf[15:12] <= 4'b1111;
             end
             1:
             begin
-                gbuf[3:0]   <= 4'b0011;                     //state 1ì€ ë‚¨ì€ê¸°íšŒ 3ì´ë¯€ë¡œ 3ì„ í‘œí˜„í•´ì•¼ í•¨. (3ì€ 0011ê³¼ match)
+                gbuf[3:0]   <= 4'b0011;                     //state 1Àº ³²Àº±âÈ¸ 3ÀÌ¹Ç·Î 3À» Ç¥ÇöÇØ¾ß ÇÔ. (3Àº 0011°ú match)
                 gbuf[7:4]   <= 4'b1111;
                 gbuf[11:8]  <= 4'b1111;
                 gbuf[15:12] <= 4'b1111;
@@ -189,10 +183,6 @@ module main (
             end
         endcase
     end
-
-    /////////////////////////////
-
-    /////////////////////////////
 endmodule
 
 module Seg7Renderer (
@@ -206,11 +196,11 @@ module Seg7Renderer (
 
     initial begin
         counter <= 0;
-        segSel <= 14;           // 1110, ì²«ë²ˆì§¸(ê°€ì¥ ì˜¤ë¥¸ìª½) segmentë¥¼ ì˜ë¯¸
+        segSel <= 14;           // 1110, Ã¹¹øÂ°(°¡Àå ¿À¸¥ÂÊ) segment¸¦ ÀÇ¹Ì
         seg <= 8'b11111111;
     end
 
-    bcd_to_7seg pos0 (              // code(4bit) -> 7seg(8bit) ë¡œ ë³€í™˜ í›„ segì— ì €ì¥
+    bcd_to_7seg pos0 (              // code(4bit) -> 7seg(8bit) ·Î º¯È¯ ÈÄ seg¿¡ ÀúÀå
         .bcd(gbuf[3:0]),
         .seg(res0_)
     );
@@ -229,12 +219,12 @@ module Seg7Renderer (
 
     always @(posedge clk) begin
         counter <= counter + 1;
-        if (counter == 1000000) begin                    //= 0.1ì´ˆ
+        if (counter == 1000000) begin                    
             counter <= 0;
             case (segSel)
                 4'b1110: begin                               // 1110
-                    segSel <= 4'b1101;                       // 1101 (ë‘ë²ˆì§¸ segmentë¡œ ì˜®ê²¨ì¤Œ)
-                    seg <= res1_;                        // ë‘ë²ˆì§¸ segmentì— í•´ë‹¹í•˜ëŠ” res1ì„ segì— ì €ì¥         
+                    segSel <= 4'b1101;                       // 1101 (µÎ¹øÂ° segment·Î ¿Å°ÜÁÜ)
+                    seg <= res1_;                        // µÎ¹øÂ° segment¿¡ ÇØ´çÇÏ´Â res1À» seg¿¡ ÀúÀå         
                 end
                 4'b1101: begin
                     segSel <= 4'b1011;
